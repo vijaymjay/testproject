@@ -4,7 +4,11 @@ const express = require('express');
 const path = require('path');
 const bodyparser = require('body-parser');
 const router = require('./routes/routes'); 
+const jwt = require('jsonwebtoken');
 
+
+var userObj = { username : 'vijaym.jay' }
+let token = jwt.sign({ user: userObj }, process.env.JWT_SECRET);
 
 const winston = require('winston');
 const expressWinston = require('express-winston');
@@ -24,9 +28,28 @@ app.use(expressWinston.errorLogger({
 					]
 			  }));
 
-app.use(function(err,req,res,next){
-	res.status(422).send({error:err.message});
-})
+app.use(function(req, res, next) {
+  res.status(HttpStatus.NOT_FOUND).send()
+});
+
+// error handler
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || HttpStatus.INTERNAL_SERVER_ERROR);
+  res.send({
+    "code": 80000,
+    "api-message": err.message,
+    "message": err.message
+  })
+});
+
+process.on('unhandledRejection', (reason, p) => {
+	console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+});
 
 app.set('views', path.join(__dirname, '/views/'));
 

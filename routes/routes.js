@@ -1,8 +1,8 @@
 require('dotenv').config()
 
 const express = require('express');
-var router = express.Router();  
-
+const router = express.Router();  
+const jwt = require('jsonwebtoken');
 var controller = require('../controllers/userController'); 
 
 const { check } = require('express-validator');
@@ -57,12 +57,15 @@ function authenticationToken(req,res,next){
 	
 	if(token == null) return res.sendStatus(401)
 		
-	if(token == process.env.TOKEN){
-		next();
+	jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
+	if (err) {
+	  return res.sendStatus(403)
+	} else {
+	  next();
 	}
-	else {
-		return res.sendStatus(403)
-	}
+  });
+	
+	
 }
 
 
